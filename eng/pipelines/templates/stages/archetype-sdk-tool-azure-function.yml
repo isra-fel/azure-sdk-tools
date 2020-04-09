@@ -1,0 +1,59 @@
+parameters:
+- name: ToolPath
+  type: string
+
+stages:
+    - stage: Build
+      variables:
+      - template: ../variables/globals.yml
+      jobs:
+      - job: BuildPackage
+        pool:
+          vmImage: ubuntu-16.04
+        steps:
+          - task: DotNetCoreInstaller@0
+            displayName: 'Use .NET Core sdk $(DotNetCoreVersion)'
+            inputs:
+              version: '3.1.201'
+          - pwsh: |
+              dotnet restore tools/webhook-router/Azure.Sdk.Tools.WebhookRouter
+            displayName: Restore
+          - pwsh: |
+              dotnet build tools/webhook-router/Azure.Sdk.Tools.WebhookRouter --configuration Release --no-restore /p:VersionSuffix=build.$GITHUB_RUN_ID
+            displayName: Build
+          - pwsh: Unit Test
+              dotnet tools/webhook-router/Azure.Sdk.Tools.WebhookRouter.Tests --configuration Release
+            displayName: 'Test'
+          - publish: $(Build.ArtifactStagingDirectory)
+            displayName: Publish
+            artifact: artifacts
+            condition: succeededOrFailed()
+
+    - ${{if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'internal'))}}:
+      - stage: Staging
+        dependsOn: Build
+        jobs:
+        - deployment: PublishFunction
+          environment: webhook-receiver-staging
+          pool:
+            vmImage: ubuntu-16.04
+          strategy:
+            runOnce:
+              deploy:
+                steps:
+                - pwsh:
+                    Write-Host "Deploying to staging"
+                    
+      - stage: Staging
+        dependsOn: Staging
+        jobs:
+        - deployment: PublishFunction
+            environment: webhook-receiver-staging
+            pool:
+            vmImage: ubuntu-16.04
+            strategy:
+            runOnce:
+                deploy:
+                steps:
+                - pwsh:
+                    Write-Host "Deploying to production"
