@@ -1,5 +1,5 @@
 parameters:
-- name: ToolPath
+- name: ToolName
   type: string
 
 stages:
@@ -16,13 +16,13 @@ stages:
             inputs:
               version: '3.1.201'
           - pwsh: |
-              dotnet restore tools/webhook-router/Azure.Sdk.Tools.WebhookRouter
+              dotnet restore tools/${{ parameters.ToolName }}
             displayName: Restore
           - pwsh: |
-              dotnet build tools/webhook-router/Azure.Sdk.Tools.WebhookRouter --configuration Release --no-restore /p:VersionSuffix=build.$GITHUB_RUN_ID
+              dotnet build tools/${{ parameters.ToolName }} --configuration Release --no-restore
             displayName: Build
           - pwsh: Unit Test
-              dotnet tools/webhook-router/Azure.Sdk.Tools.WebhookRouter.Tests --configuration Release
+              dotnet tools/${{ parameters.ToolName }} --configuration Release
             displayName: 'Test'
           - publish: $(Build.ArtifactStagingDirectory)
             displayName: Publish
@@ -43,7 +43,7 @@ stages:
                 steps:
                 - pwsh:
                     Write-Host "Deploying to staging"
-                    
+
       - stage: Staging
         dependsOn: Staging
         jobs:
