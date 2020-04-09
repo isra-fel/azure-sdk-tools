@@ -44,7 +44,7 @@ stages:
                 - pwsh:
                     Write-Host "Deploying to staging"
 
-      - stage: Staging
+      - stage: Production
         dependsOn: Staging
         jobs:
         - deployment: PublishFunction
