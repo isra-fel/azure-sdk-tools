@@ -21,7 +21,7 @@ stages:
           - pwsh: |
               dotnet build tools/${{ parameters.ToolName }} --configuration Release --no-restore
             displayName: Build
-          - pwsh:
+          - pwsh: |
               dotnet tools/${{ parameters.ToolName }} --configuration Release
             displayName: 'Test'
           - publish: $(Build.ArtifactStagingDirectory)
