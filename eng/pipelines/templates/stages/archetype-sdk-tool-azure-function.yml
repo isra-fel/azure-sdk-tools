@@ -48,10 +48,10 @@ stages:
         dependsOn: Staging
         jobs:
         - deployment: PublishFunction
-            environment: webhook-receiver-staging
-            pool:
+          environment: webhook-receiver-staging
+          pool:
             vmImage: ubuntu-16.04
-            strategy:
+          strategy:
             runOnce:
                 deploy:
                 steps:
