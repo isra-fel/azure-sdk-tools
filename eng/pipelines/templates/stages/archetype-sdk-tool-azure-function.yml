@@ -54,6 +54,6 @@ stages:
           strategy:
             runOnce:
                 deploy:
-                steps:
-                - pwsh:
-                    Write-Host "Deploying to production"
+                  steps:
+                    - pwsh:
+                        Write-Host "Deploying to production"
